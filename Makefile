@@ -26,11 +26,11 @@ jupyter:
 		bash -c "jupyter lab --ip=0.0.0.0 --no-browser --NotebookApp.token=''"
 
 run_module: .require-module
-	docker run -i --rm ${DOCKER_PARAMETERS} \
+	nvidia-docker run -i --rm ${DOCKER_PARAMETERS} \
 		${IMAGE} ${module}
 
 bash_docker:
-	docker run -it --rm ${DOCKER_PARAMETERS} ${IMAGE}
+	nvidia-docker run -it --rm ${DOCKER_PARAMETERS} ${IMAGE}
 
 .require-module:
 ifndef module

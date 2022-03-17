@@ -66,6 +66,7 @@ class Informer(nn.Module):
         
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, 
                 enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
+        #import ipdb; ipdb.set_trace()
         enc_out = self.enc_embedding(x_enc, x_mark_enc)
         enc_out, attns = self.encoder(enc_out, attn_mask=enc_self_mask)
 
@@ -75,6 +76,8 @@ class Informer(nn.Module):
         
         # dec_out = self.end_conv1(dec_out)
         # dec_out = self.end_conv2(dec_out.transpose(2,1)).transpose(1,2)
+        #import ipdb; ipdb.set_trace()
+
         if self.output_attention:
             return dec_out[:,-self.pred_len:,:], attns
         else:
@@ -143,6 +146,8 @@ class InformerStack(nn.Module):
         
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, 
                 enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
+
+        #import ipdb; ipdb.set_trace()
         enc_out = self.enc_embedding(x_enc, x_mark_enc)
         enc_out, attns = self.encoder(enc_out, attn_mask=enc_self_mask)
 
@@ -152,6 +157,7 @@ class InformerStack(nn.Module):
         
         # dec_out = self.end_conv1(dec_out)
         # dec_out = self.end_conv2(dec_out.transpose(2,1)).transpose(1,2)
+        #import ipdb; ipdb.set_trace()
         if self.output_attention:
             return dec_out[:,-self.pred_len:,:], attns
         else:

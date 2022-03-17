@@ -70,8 +70,8 @@ class Exp_Informer(Exp_Basic):
             'Solar':Dataset_Custom,
             'custom':Dataset_Custom,
         }
-        Data = data_dict[self.args.data]
-        timeenc = 0 if args.embed!='timeF' else 1
+        Data = data_dict[self.args.data] # data.data_loader.Dataset_ETT_hour
+        timeenc = 0 if args.embed!='timeF' else 1 # timeenc=1
 
         if flag == 'test':
             shuffle_flag = False; drop_last = True; batch_size = args.batch_size; freq=args.freq
@@ -80,18 +80,20 @@ class Exp_Informer(Exp_Basic):
             Data = Dataset_Pred
         else:
             shuffle_flag = True; drop_last = True; batch_size = args.batch_size; freq=args.freq
+        #import ipdb; ipdb.set_trace()
         data_set = Data(
             root_path=args.root_path,
             data_path=args.data_path,
-            flag=flag,
-            size=[args.seq_len, args.label_len, args.pred_len],
-            features=args.features,
-            target=args.target,
-            inverse=args.inverse,
-            timeenc=timeenc,
-            freq=freq,
-            cols=args.cols
+            flag=flag, # 'train'
+            size=[args.seq_len, args.label_len, args.pred_len], # [336, 336, 168]
+            features=args.features, # "M"
+            target=args.target, # 'OT' = oil temperature
+            inverse=args.inverse, # False
+            timeenc=timeenc, # 1
+            freq=freq, # 'h'
+            cols=args.cols # None
         )
+        #import ipdb; ipdb.set_trace()
         print(flag, len(data_set))
         data_loader = DataLoader(
             data_set,
@@ -112,6 +114,7 @@ class Exp_Informer(Exp_Basic):
 
     def vali(self, vali_data, vali_loader, criterion):
         self.model.eval()
+        #import ipdb; ipdb.set_trace()
         total_loss = []
         for i, (batch_x,batch_y,batch_x_mark,batch_y_mark) in enumerate(vali_loader):
             pred, true = self._process_one_batch(
@@ -123,8 +126,11 @@ class Exp_Informer(Exp_Basic):
         return total_loss
 
     def train(self, setting):
+        #import ipdb; ipdb.set_trace()
         train_data, train_loader = self._get_data(flag = 'train')
+        #import ipdb; ipdb.set_trace()
         vali_data, vali_loader = self._get_data(flag = 'val')
+        #import ipdb; ipdb.set_trace()
         test_data, test_loader = self._get_data(flag = 'test')
 
         path = os.path.join(self.args.checkpoints, setting)
@@ -146,9 +152,11 @@ class Exp_Informer(Exp_Basic):
             iter_count = 0
             train_loss = []
             
+            #import ipdb; ipdb.set_trace()
             self.model.train()
             epoch_time = time.time()
             for i, (batch_x,batch_y,batch_x_mark,batch_y_mark) in enumerate(train_loader):
+                #import ipdb; ipdb.set_trace()
                 iter_count += 1
                 
                 model_optim.zero_grad()

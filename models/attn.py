@@ -16,6 +16,7 @@ class FullAttention(nn.Module):
         self.dropout = nn.Dropout(attention_dropout)
         
     def forward(self, queries, keys, values, attn_mask):
+        #import ipdb; ipdb.set_trace()
         B, L, H, E = queries.shape
         _, S, _, D = values.shape
         scale = self.scale or 1./sqrt(E)
@@ -29,6 +30,7 @@ class FullAttention(nn.Module):
 
         A = self.dropout(torch.softmax(scale * scores, dim=-1))
         V = torch.einsum("bhls,bshd->blhd", A, values)
+        #import ipdb; ipdb.set_trace()
         
         if self.output_attention:
             return (V.contiguous(), A)
@@ -98,6 +100,7 @@ class ProbAttention(nn.Module):
             return (context_in, None)
 
     def forward(self, queries, keys, values, attn_mask):
+        #import ipdb; ipdb.set_trace()
         B, L_Q, H, D = queries.shape
         _, L_K, _, _ = keys.shape
 
@@ -122,6 +125,7 @@ class ProbAttention(nn.Module):
         # update the context with selected top_k queries
         context, attn = self._update_context(context, values, scores_top, index, L_Q, attn_mask)
         
+        #import ipdb; ipdb.set_trace()
         return context.transpose(2,1).contiguous(), attn
 
 
@@ -142,6 +146,7 @@ class AttentionLayer(nn.Module):
         self.mix = mix
 
     def forward(self, queries, keys, values, attn_mask):
+        #import ipdb; ipdb.set_trace()
         B, L, _ = queries.shape
         _, S, _ = keys.shape
         H = self.n_heads
@@ -160,4 +165,5 @@ class AttentionLayer(nn.Module):
             out = out.transpose(2,1).contiguous()
         out = out.view(B, L, -1)
 
+        #import ipdb; ipdb.set_trace()
         return self.out_projection(out), attn

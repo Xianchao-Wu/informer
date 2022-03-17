@@ -92,8 +92,8 @@ def time_features_from_frequency_str(freq_str: str) -> List[TimeFeature]:
     offset = to_offset(freq_str)
 
     for offset_type, feature_classes in features_by_offsets.items():
-        if isinstance(offset, offset_type):
-            return [cls() for cls in feature_classes]
+        if isinstance(offset, offset_type): # offset = <Hour>
+            return [cls() for cls in feature_classes] #[<class 'utils.timefeatures.HourOfDay'>, <class 'utils.timefeatures.DayOfWeek'>, <class 'utils.timefeatures.DayOfMonth'>, <class 'utils.timefeatures.DayOfYear'>]
 
     supported_freq_msg = f"""
     Unsupported frequency {freq_str}
@@ -149,3 +149,9 @@ def time_features(dates, timeenc=1, freq='h'):
     if timeenc==1:
         dates = pd.to_datetime(dates.date.values)
         return np.vstack([feat(dates) for feat in time_features_from_frequency_str(freq)]).transpose(1,0)
+        # [HourOfDay(), DayOfWeek(), DayOfMonth(), DayOfYear()]
+        # 2016-07-01 00:00:00, 2016-07-01 01:00:00, 2016-07-01 02:00:00, 2016-07-01 03:00:00, 2016-07-01 04:00:00
+        # HourOfDay(): -0.5,  -0.4565217391304348, -0.41304347826086957, -0.3695652173913043, -0.32608695652173914
+        # DayOfWeek(): 0.1666, 0.1666, 0.1666, 0.1666, 0.1666 
+        # DayOfMonth(): -0.5, -0.5, -0.5, -0.5, -0.5
+        # DayOfYear(): -0.0013698630136986245, -0.0013698630136986245, -0.0013698630136986245, -0.0013698630136986245, -0.0013698630136986245

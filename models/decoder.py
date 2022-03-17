@@ -18,6 +18,7 @@ class DecoderLayer(nn.Module):
         self.activation = F.relu if activation == "relu" else F.gelu
 
     def forward(self, x, cross, x_mask=None, cross_mask=None):
+        #import ipdb; ipdb.set_trace()
         x = x + self.dropout(self.self_attention(
             x, x, x,
             attn_mask=x_mask
@@ -32,6 +33,7 @@ class DecoderLayer(nn.Module):
         y = x = self.norm2(x)
         y = self.dropout(self.activation(self.conv1(y.transpose(-1,1))))
         y = self.dropout(self.conv2(y).transpose(-1,1))
+        #import ipdb; ipdb.set_trace()
 
         return self.norm3(x+y)
 
@@ -42,10 +44,12 @@ class Decoder(nn.Module):
         self.norm = norm_layer
 
     def forward(self, x, cross, x_mask=None, cross_mask=None):
+        #import ipdb; ipdb.set_trace()
         for layer in self.layers:
             x = layer(x, cross, x_mask=x_mask, cross_mask=cross_mask)
 
         if self.norm is not None:
             x = self.norm(x)
 
+        #import ipdb; ipdb.set_trace()
         return x

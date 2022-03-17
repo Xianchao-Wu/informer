@@ -18,14 +18,15 @@ class Dataset_ETT_hour(Dataset):
                  target='OT', scale=True, inverse=False, timeenc=0, freq='h', cols=None):
         # size [seq_len, label_len, pred_len]
         # info
+        #import ipdb; ipdb.set_trace()
         if size == None:
             self.seq_len = 24*4*4
             self.label_len = 24*4
             self.pred_len = 24*4
         else:
-            self.seq_len = size[0]
-            self.label_len = size[1]
-            self.pred_len = size[2]
+            self.seq_len = size[0] # 336 = 24*14, 14 days
+            self.label_len = size[1] # 336
+            self.pred_len = size[2] # 168 = 24*7, 7 days
         # init
         assert flag in ['train', 'test', 'val']
         type_map = {'train':0, 'val':1, 'test':2}
@@ -38,48 +39,52 @@ class Dataset_ETT_hour(Dataset):
         self.timeenc = timeenc
         self.freq = freq
         
-        self.root_path = root_path
-        self.data_path = data_path
+        self.root_path = root_path # './data/ETT/'
+        self.data_path = data_path # 'ETTh2.csv'
         self.__read_data__()
+        #import ipdb; ipdb.set_trace()
 
     def __read_data__(self):
+        #import ipdb; ipdb.set_trace()
         self.scaler = StandardScaler()
-        df_raw = pd.read_csv(os.path.join(self.root_path,
+        df_raw = pd.read_csv(os.path.join(self.root_path, # (17420, 8), row=一共多少个“小时点”，column=8，date以及7个features
                                           self.data_path))
 
-        border1s = [0, 12*30*24 - self.seq_len, 12*30*24+4*30*24 - self.seq_len]
-        border2s = [12*30*24, 12*30*24+4*30*24, 12*30*24+8*30*24]
+        border1s = [0, 12*30*24 - self.seq_len, 12*30*24+4*30*24 - self.seq_len] # [0, 8304, 11184]
+        border2s = [12*30*24, 12*30*24+4*30*24, 12*30*24+8*30*24] # [8640, 11520, 14400]
         border1 = border1s[self.set_type]
         border2 = border2s[self.set_type]
         
         if self.features=='M' or self.features=='MS':
-            cols_data = df_raw.columns[1:]
-            df_data = df_raw[cols_data]
+            cols_data = df_raw.columns[1:] # (7,), Index(['HUFL', 'HULL', 'MUFL', 'MULL', 'LUFL', 'LULL', 'OT'], dtype='object')
+            df_data = df_raw[cols_data] # (17420, 7) 
         elif self.features=='S':
             df_data = df_raw[[self.target]]
 
         if self.scale:
-            train_data = df_data[border1s[0]:border2s[0]]
-            self.scaler.fit(train_data.values)
-            data = self.scaler.transform(df_data.values)
+            train_data = df_data[border1s[0]:border2s[0]] # df_data[0:8640], 8640=12*30*24 是12个月，每个月30天，每天24小时得到的
+            self.scaler.fit(train_data.values) # [8640, 7], 一年的数据作为训练data
+            data = self.scaler.transform(df_data.values) # TODO changed! from 41.130001 to -0.03893579, but how?
         else:
             data = df_data.values
             
-        df_stamp = df_raw[['date']][border1:border2]
+        df_stamp = df_raw[['date']][border1:border2] # (8640, 1) 关于date的信息，精确到了yyyy-mm-dd hh:mm:ss
         df_stamp['date'] = pd.to_datetime(df_stamp.date)
-        data_stamp = time_features(df_stamp, timeenc=self.timeenc, freq=self.freq)
+        data_stamp = time_features(df_stamp, timeenc=self.timeenc, freq=self.freq) # [8640, 4], 用四个特征值来表示一个时间点, hour-of-day, day-of-week/month/year
 
-        self.data_x = data[border1:border2]
-        if self.inverse:
-            self.data_y = df_data.values[border1:border2]
+        self.data_x = data[border1:border2] # data: [17420, 7], border1=0, border2=8640, so self.data_x=[8640, 7], [[-0.03893579,  0.04524569, -0.59755963] 
+        if self.inverse: # False
+            self.data_y = df_data.values[border1:border2] # self.data_y=[8640, 7], [-0.03893579,  0.04524569, -0.59755963]
         else:
             self.data_y = data[border1:border2]
         self.data_stamp = data_stamp
+        #import ipdb; ipdb.set_trace()
     
     def __getitem__(self, index):
+        #import ipdb; ipdb.set_trace()
         s_begin = index
-        s_end = s_begin + self.seq_len
-        r_begin = s_end - self.label_len 
+        s_end = s_begin + self.seq_len # self.seq_len=336=24*14
+        r_begin = s_end - self.label_len # self.label_len=336=24*14 
         r_end = r_begin + self.label_len + self.pred_len
 
         seq_x = self.data_x[s_begin:s_end]
@@ -90,10 +95,11 @@ class Dataset_ETT_hour(Dataset):
         seq_x_mark = self.data_stamp[s_begin:s_end]
         seq_y_mark = self.data_stamp[r_begin:r_end]
 
-        return seq_x, seq_y, seq_x_mark, seq_y_mark
+        #import ipdb; ipdb.set_trace()
+        return seq_x, seq_y, seq_x_mark, seq_y_mark # seq_x:[336,7], seq_y:[336+168,7] and seq_x=seq_y[:336]; seq_x_mark:[336,4], seq_y_mark:[504,4]
     
     def __len__(self):
-        return len(self.data_x) - self.seq_len- self.pred_len + 1
+        return len(self.data_x) - self.seq_len- self.pred_len + 1 # 8640 - 336 - 168 + 1 = 8137
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
@@ -102,6 +108,7 @@ class Dataset_ETT_minute(Dataset):
     def __init__(self, root_path, flag='train', size=None, 
                  features='S', data_path='ETTm1.csv', 
                  target='OT', scale=True, inverse=False, timeenc=0, freq='t', cols=None):
+        #import ipdb; ipdb.set_trace()
         # size [seq_len, label_len, pred_len]
         # info
         if size == None:
@@ -127,8 +134,10 @@ class Dataset_ETT_minute(Dataset):
         self.root_path = root_path
         self.data_path = data_path
         self.__read_data__()
+        #import ipdb; ipdb.set_trace()
 
     def __read_data__(self):
+        #import ipdb; ipdb.set_trace()
         self.scaler = StandardScaler()
         df_raw = pd.read_csv(os.path.join(self.root_path,
                                           self.data_path))
@@ -161,8 +170,10 @@ class Dataset_ETT_minute(Dataset):
         else:
             self.data_y = data[border1:border2]
         self.data_stamp = data_stamp
+        #import ipdb; ipdb.set_trace()
     
     def __getitem__(self, index):
+        #import ipdb; ipdb.set_trace()
         s_begin = index
         s_end = s_begin + self.seq_len
         r_begin = s_end - self.label_len
@@ -176,6 +187,7 @@ class Dataset_ETT_minute(Dataset):
         seq_x_mark = self.data_stamp[s_begin:s_end]
         seq_y_mark = self.data_stamp[r_begin:r_end]
 
+        #import ipdb; ipdb.set_trace()
         return seq_x, seq_y, seq_x_mark, seq_y_mark
     
     def __len__(self):
@@ -189,6 +201,7 @@ class Dataset_Custom(Dataset):
     def __init__(self, root_path, flag='train', size=None, 
                  features='S', data_path='ETTh1.csv', 
                  target='OT', scale=True, inverse=False, timeenc=0, freq='h', cols=None):
+        #import ipdb; ipdb.set_trace()
         # size [seq_len, label_len, pred_len]
         # info
         if size == None:
@@ -214,8 +227,10 @@ class Dataset_Custom(Dataset):
         self.root_path = root_path
         self.data_path = data_path
         self.__read_data__()
+        #import ipdb; ipdb.set_trace()
 
     def __read_data__(self):
+        #import ipdb; ipdb.set_trace()
         self.scaler = StandardScaler()
         df_raw = pd.read_csv(os.path.join(self.root_path,
                                           self.data_path))
@@ -261,8 +276,10 @@ class Dataset_Custom(Dataset):
         else:
             self.data_y = data[border1:border2]
         self.data_stamp = data_stamp
+        #import ipdb; ipdb.set_trace()
     
     def __getitem__(self, index):
+        #import ipdb; ipdb.set_trace()
         s_begin = index
         s_end = s_begin + self.seq_len
         r_begin = s_end - self.label_len 
@@ -276,6 +293,7 @@ class Dataset_Custom(Dataset):
         seq_x_mark = self.data_stamp[s_begin:s_end]
         seq_y_mark = self.data_stamp[r_begin:r_end]
 
+        #import ipdb; ipdb.set_trace()
         return seq_x, seq_y, seq_x_mark, seq_y_mark
     
     def __len__(self):
@@ -290,6 +308,7 @@ class Dataset_Pred(Dataset):
                  target='OT', scale=True, inverse=False, timeenc=0, freq='15min', cols=None):
         # size [seq_len, label_len, pred_len]
         # info
+        #import ipdb; ipdb.set_trace()
         if size == None:
             self.seq_len = 24*4*4
             self.label_len = 24*4
@@ -311,8 +330,10 @@ class Dataset_Pred(Dataset):
         self.root_path = root_path
         self.data_path = data_path
         self.__read_data__()
+        #import ipdb; ipdb.set_trace()
 
     def __read_data__(self):
+        #import ipdb; ipdb.set_trace()
         self.scaler = StandardScaler()
         df_raw = pd.read_csv(os.path.join(self.root_path,
                                           self.data_path))
@@ -355,8 +376,10 @@ class Dataset_Pred(Dataset):
         else:
             self.data_y = data[border1:border2]
         self.data_stamp = data_stamp
+        #import ipdb; ipdb.set_trace()
     
     def __getitem__(self, index):
+        #import ipdb; ipdb.set_trace()
         s_begin = index
         s_end = s_begin + self.seq_len
         r_begin = s_end - self.label_len
@@ -370,6 +393,7 @@ class Dataset_Pred(Dataset):
         seq_x_mark = self.data_stamp[s_begin:s_end]
         seq_y_mark = self.data_stamp[r_begin:r_end]
 
+        #import ipdb; ipdb.set_trace()
         return seq_x, seq_y, seq_x_mark, seq_y_mark
     
     def __len__(self):

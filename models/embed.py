@@ -21,6 +21,8 @@ class PositionalEmbedding(nn.Module):
         self.register_buffer('pe', pe)
 
     def forward(self, x):
+
+        #import ipdb; ipdb.set_trace()
         return self.pe[:, :x.size(1)]
 
 class TokenEmbedding(nn.Module):
@@ -34,6 +36,7 @@ class TokenEmbedding(nn.Module):
                 nn.init.kaiming_normal_(m.weight,mode='fan_in',nonlinearity='leaky_relu')
 
     def forward(self, x):
+        #import ipdb; ipdb.set_trace()
         x = self.tokenConv(x.permute(0, 2, 1)).transpose(1,2)
         return x
 
@@ -54,6 +57,7 @@ class FixedEmbedding(nn.Module):
         self.emb.weight = nn.Parameter(w, requires_grad=False)
 
     def forward(self, x):
+        #import ipdb; ipdb.set_trace()
         return self.emb(x).detach()
 
 class TemporalEmbedding(nn.Module):
@@ -72,6 +76,7 @@ class TemporalEmbedding(nn.Module):
         self.month_embed = Embed(month_size, d_model)
     
     def forward(self, x):
+        #import ipdb; ipdb.set_trace()
         x = x.long()
         
         minute_x = self.minute_embed(x[:,:,4]) if hasattr(self, 'minute_embed') else 0.
@@ -80,6 +85,7 @@ class TemporalEmbedding(nn.Module):
         day_x = self.day_embed(x[:,:,1])
         month_x = self.month_embed(x[:,:,0])
         
+        #import ipdb; ipdb.set_trace()
         return hour_x + weekday_x + day_x + month_x + minute_x
 
 class TimeFeatureEmbedding(nn.Module):
@@ -91,6 +97,7 @@ class TimeFeatureEmbedding(nn.Module):
         self.embed = nn.Linear(d_inp, d_model)
     
     def forward(self, x):
+        #import ipdb; ipdb.set_trace()
         return self.embed(x)
 
 class DataEmbedding(nn.Module):
@@ -104,6 +111,7 @@ class DataEmbedding(nn.Module):
         self.dropout = nn.Dropout(p=dropout)
 
     def forward(self, x, x_mark):
+        #import ipdb; ipdb.set_trace()
         x = self.value_embedding(x) + self.position_embedding(x) + self.temporal_embedding(x_mark)
         
         return self.dropout(x)

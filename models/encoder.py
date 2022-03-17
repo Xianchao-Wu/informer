@@ -16,11 +16,14 @@ class ConvLayer(nn.Module):
         self.maxPool = nn.MaxPool1d(kernel_size=3, stride=2, padding=1)
 
     def forward(self, x):
+        #import ipdb; ipdb.set_trace()
         x = self.downConv(x.permute(0, 2, 1))
         x = self.norm(x)
         x = self.activation(x)
         x = self.maxPool(x)
         x = x.transpose(1,2)
+        #import ipdb; ipdb.set_trace()
+
         return x
 
 class EncoderLayer(nn.Module):
@@ -36,6 +39,7 @@ class EncoderLayer(nn.Module):
         self.activation = F.relu if activation == "relu" else F.gelu
 
     def forward(self, x, attn_mask=None):
+        #import ipdb; ipdb.set_trace()
         # x [B, L, D]
         # x = x + self.dropout(self.attention(
         #     x, x, x,
@@ -50,6 +54,8 @@ class EncoderLayer(nn.Module):
         y = x = self.norm1(x)
         y = self.dropout(self.activation(self.conv1(y.transpose(-1,1))))
         y = self.dropout(self.conv2(y).transpose(-1,1))
+        
+        #import ipdb; ipdb.set_trace()
 
         return self.norm2(x+y), attn
 
@@ -61,6 +67,7 @@ class Encoder(nn.Module):
         self.norm = norm_layer
 
     def forward(self, x, attn_mask=None):
+        #import ipdb; ipdb.set_trace()
         # x [B, L, D]
         attns = []
         if self.conv_layers is not None:
@@ -78,6 +85,7 @@ class Encoder(nn.Module):
         if self.norm is not None:
             x = self.norm(x)
 
+        #import ipdb; ipdb.set_trace()
         return x, attns
 
 class EncoderStack(nn.Module):
@@ -88,11 +96,13 @@ class EncoderStack(nn.Module):
 
     def forward(self, x, attn_mask=None):
         # x [B, L, D]
+        #import ipdb; ipdb.set_trace()
         x_stack = []; attns = []
         for i_len, encoder in zip(self.inp_lens, self.encoders):
             inp_len = x.shape[1]//(2**i_len)
             x_s, attn = encoder(x[:, -inp_len:, :])
             x_stack.append(x_s); attns.append(attn)
         x_stack = torch.cat(x_stack, -2)
+        #import ipdb; ipdb.set_trace()
         
         return x_stack, attns
