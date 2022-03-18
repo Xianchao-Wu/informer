@@ -15,6 +15,16 @@ class TimeFeature:
     def __repr__(self):
         return self.__class__.__name__ + "()"
 
+class MSOfSecond(TimeFeature): 
+    def __call__(self, index: pd.DatetimeIndex) -> np.ndarray: 
+        return index.microsecond/999999 - 0.5 
+        # 1,000,000 microseconds = 1 second 
+        # [10ms = 10 millisecond = 0.01 second = 10000 microseconds]。
+        # 然后你的输入数据的时间戳格式应该是：
+        # 2000-01-01 00:00:00.010000 
+        # 2000-01-01 00:00:00.020000
+        # ... 这样的10ms一个间隔
+
 class SecondOfMinute(TimeFeature):
     """Minute of hour encoded as value between [-0.5, 0.5]"""
     def __call__(self, index: pd.DatetimeIndex) -> np.ndarray:
@@ -87,10 +97,26 @@ def time_features_from_frequency_str(freq_str: str) -> List[TimeFeature]:
             DayOfMonth,
             DayOfYear,
         ],
+        offsets.Micro: [
+            MSOfSecond,
+            SecondOfMinute,
+            MinuteOfHour,
+            HourOfDay,
+            DayOfWeek,
+            DayOfMonth,
+            DayOfYear,
+        ],
     }
 
-    offset = to_offset(freq_str)
+    if freq_str == 'ms':
+        return [cls() for cls in features_by_offsets[offsets.Micro]]
+        #for offset_type, feature_classes in features_by_offsets.items():
+        #    if isinstance(offset, offset_type): # offset = <Hour>
+        #        return [cls() for cls in feature_classes] #[<class 'utils.timefeatures.HourOfDay'>, <class 'utils.timefeatures.DayOfWeek'>, <class 'utils.timefeatures.DayOfMonth'>, <class 'utils.timefeatures.DayOfYear'>]
 
+
+    offset = to_offset(freq_str)
+    #import ipdb; ipdb.set_trace()
     for offset_type, feature_classes in features_by_offsets.items():
         if isinstance(offset, offset_type): # offset = <Hour>
             return [cls() for cls in feature_classes] #[<class 'utils.timefeatures.HourOfDay'>, <class 'utils.timefeatures.DayOfWeek'>, <class 'utils.timefeatures.DayOfMonth'>, <class 'utils.timefeatures.DayOfYear'>]

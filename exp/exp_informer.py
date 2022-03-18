@@ -28,6 +28,7 @@ class Exp_Informer(Exp_Basic):
             'informerstack':InformerStack,
         }
         if self.args.model=='informer' or self.args.model=='informerstack':
+            #import ipdb; ipdb.set_trace()
             e_layers = self.args.e_layers if self.args.model=='informer' else self.args.s_layers
             model = model_dict[self.args.model](
                 self.args.enc_in,
@@ -69,6 +70,7 @@ class Exp_Informer(Exp_Basic):
             'ECL':Dataset_Custom,
             'Solar':Dataset_Custom,
             'custom':Dataset_Custom,
+            'ETTh2ms1f2': Dataset_ETT_hour, 
         }
         Data = data_dict[self.args.data] # data.data_loader.Dataset_ETT_hour
         timeenc = 0 if args.embed!='timeF' else 1 # timeenc=1
@@ -133,6 +135,7 @@ class Exp_Informer(Exp_Basic):
         #import ipdb; ipdb.set_trace()
         test_data, test_loader = self._get_data(flag = 'test')
 
+        #import ipdb; ipdb.set_trace()
         path = os.path.join(self.args.checkpoints, setting)
         if not os.path.exists(path):
             os.makedirs(path)
@@ -160,6 +163,7 @@ class Exp_Informer(Exp_Basic):
                 iter_count += 1
                 
                 model_optim.zero_grad()
+                #import ipdb; ipdb.set_trace()
                 pred, true = self._process_one_batch(
                     train_data, batch_x, batch_y, batch_x_mark, batch_y_mark)
                 loss = criterion(pred, true)

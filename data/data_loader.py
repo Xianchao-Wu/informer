@@ -55,7 +55,7 @@ class Dataset_ETT_hour(Dataset):
         border1 = border1s[self.set_type]
         border2 = border2s[self.set_type]
         
-        if self.features=='M' or self.features=='MS':
+        if self.features=='M' or self.features=='MS' or self.features=='ms':
             cols_data = df_raw.columns[1:] # (7,), Index(['HUFL', 'HULL', 'MUFL', 'MULL', 'LUFL', 'LULL', 'OT'], dtype='object')
             df_data = df_raw[cols_data] # (17420, 7) 
         elif self.features=='S':

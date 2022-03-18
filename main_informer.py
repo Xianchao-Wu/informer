@@ -13,7 +13,7 @@ parser.add_argument('--root_path', type=str, default='./data/ETT/', help='root p
 parser.add_argument('--data_path', type=str, default='ETTh1.csv', help='data file')    
 parser.add_argument('--features', type=str, default='M', help='forecasting task, options:[M, S, MS]; M:multivariate predict multivariate, S:univariate predict univariate, MS:multivariate predict univariate')
 parser.add_argument('--target', type=str, default='OT', help='target feature in S or MS task')
-parser.add_argument('--freq', type=str, default='h', help='freq for time features encoding, options:[s:secondly, t:minutely, h:hourly, d:daily, b:business days, w:weekly, m:monthly], you can also use more detailed freq like 15min or 3h')
+parser.add_argument('--freq', type=str, default='h', help='freq for time features encoding, options:[ms: microsecondly, s:secondly, t:minutely, h:hourly, d:daily, b:business days, w:weekly, m:monthly], you can also use more detailed freq like 15min or 3h')
 parser.add_argument('--checkpoints', type=str, default='./checkpoints/', help='location of model checkpoints')
 
 parser.add_argument('--seq_len', type=int, default=96, help='input sequence length of Informer encoder')
@@ -70,13 +70,20 @@ if args.use_gpu and args.use_multi_gpu:
 
 data_parser = {
     'ETTh1':{'data':'ETTh1.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1]},
+    'ETTh1':{'data':'ETTh1.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1]},
     'ETTh2':{'data':'ETTh2.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1]},
+
+    'ETTh2ms1f2':{'data':'ETTh2ms1f2.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1], 'ms':[1,1,1]},
+
     'ETTm1':{'data':'ETTm1.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1]},
     'ETTm2':{'data':'ETTm2.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1]},
     'WTH':{'data':'WTH.csv','T':'WetBulbCelsius','M':[12,12,12],'S':[1,1,1],'MS':[12,12,1]},
     'ECL':{'data':'ECL.csv','T':'MT_320','M':[321,321,321],'S':[1,1,1],'MS':[321,321,1]},
     'Solar':{'data':'solar_AL.csv','T':'POWER_136','M':[137,137,137],'S':[1,1,1],'MS':[137,137,1]},
 }
+
+#import ipdb; ipdb.set_trace()
+
 if args.data in data_parser.keys():
     data_info = data_parser[args.data]
     args.data_path = data_info['data']
@@ -85,7 +92,7 @@ if args.data in data_parser.keys():
 
 args.s_layers = [int(s_l) for s_l in args.s_layers.replace(' ','').split(',')]
 args.detail_freq = args.freq
-args.freq = args.freq[-1:]
+#args.freq = args.freq[-1:]
 
 print('Args in experiment:')
 print(args)
