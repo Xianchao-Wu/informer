@@ -1,4 +1,4 @@
-from data.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_Pred
+from data.data_loader import Dataset_ETT_ms, Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_Pred
 from exp.exp_basic import Exp_Basic
 from models.model import Informer, InformerStack
 
@@ -70,9 +70,9 @@ class Exp_Informer(Exp_Basic):
             'ECL':Dataset_Custom,
             'Solar':Dataset_Custom,
             'custom':Dataset_Custom,
-            'ETTh2ms1f2': Dataset_ETT_hour, 
+            'ETTh2ms1f2': Dataset_ETT_ms, # -> ms 
         }
-        Data = data_dict[self.args.data] # data.data_loader.Dataset_ETT_hour
+        Data = data_dict[self.args.data] # data.data_loader.Dataset_ETT_ms
         timeenc = 0 if args.embed!='timeF' else 1 # timeenc=1
 
         if flag == 'test':
@@ -83,20 +83,23 @@ class Exp_Informer(Exp_Basic):
         else:
             shuffle_flag = True; drop_last = True; batch_size = args.batch_size; freq=args.freq
         #import ipdb; ipdb.set_trace()
-        data_set = Data(
+        data_set = Data( # data.data_loader.Dataset_ETT_hour, the name of the class does not matter!
             root_path=args.root_path,
             data_path=args.data_path,
             flag=flag, # 'train'
-            size=[args.seq_len, args.label_len, args.pred_len], # [336, 336, 168]
-            features=args.features, # "M"
+            size=[args.seq_len, args.label_len, args.pred_len], # [336, 336, 168] -> [1152, 1152, 576]
+            features=args.features, # "M" -> 'ms'
             target=args.target, # 'OT' = oil temperature
             inverse=args.inverse, # False
             timeenc=timeenc, # 1
-            freq=freq, # 'h'
-            cols=args.cols # None
+            freq=freq, # 'h' -> 'ms'
+            cols=args.cols, # None
+            train_ratio = args.train_ratio,
+            dev_ratio = args.dev_ratio,
+            test_ratio = args.test_ratio,
         )
         #import ipdb; ipdb.set_trace()
-        print(flag, len(data_set))
+        print(flag, len(data_set)) # "train 97805"; "val 11867"; "test 11867" 
         data_loader = DataLoader(
             data_set,
             batch_size=batch_size,
@@ -142,7 +145,7 @@ class Exp_Informer(Exp_Basic):
 
         time_now = time.time()
         
-        train_steps = len(train_loader)
+        train_steps = len(train_loader) # 3056
         early_stopping = EarlyStopping(patience=self.args.patience, verbose=True)
         
         model_optim = self._select_optimizer()

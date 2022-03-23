@@ -14,6 +14,7 @@ class Informer(nn.Module):
                 dropout=0.0, attn='prob', embed='fixed', freq='h', activation='gelu', 
                 output_attention = False, distil=True, mix=True,
                 device=torch.device('cuda:0')):
+        #import ipdb; ipdb.set_trace()
         super(Informer, self).__init__()
         self.pred_len = out_len
         self.attn = attn

@@ -11,6 +11,13 @@ parser.add_argument('--model', type=str, required=True, default='informer',help=
 parser.add_argument('--data', type=str, required=True, default='ETTh1', help='data')
 parser.add_argument('--root_path', type=str, default='./data/ETT/', help='root path of the data file')
 parser.add_argument('--data_path', type=str, default='ETTh1.csv', help='data file')    
+
+# NOTE important adding:
+parser.add_argument('--train_ratio', type=float, default=0.8, help='percentage of data used for training, by default, first 80% of the whole data will be used for training')    
+parser.add_argument('--dev_ratio', type=float, default=0.1, help='percentage of data used for validating/development set, by default, first 10% of the whole data (after 80% training data) will be used')    
+parser.add_argument('--test_ratio', type=float, default=0.1, help='percentage of data used for testing, by default, last 10% of the whole data will be used for testing')    
+
+
 parser.add_argument('--features', type=str, default='M', help='forecasting task, options:[M, S, MS]; M:multivariate predict multivariate, S:univariate predict univariate, MS:multivariate predict univariate')
 parser.add_argument('--target', type=str, default='OT', help='target feature in S or MS task')
 parser.add_argument('--freq', type=str, default='h', help='freq for time features encoding, options:[ms: microsecondly, s:secondly, t:minutely, h:hourly, d:daily, b:business days, w:weekly, m:monthly], you can also use more detailed freq like 15min or 3h')
@@ -73,7 +80,8 @@ data_parser = {
     'ETTh1':{'data':'ETTh1.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1]},
     'ETTh2':{'data':'ETTh2.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1]},
 
-    'ETTh2ms1f2':{'data':'ETTh2ms1f2.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1], 'ms':[1,1,1]},
+    #'ETTh2ms1f2':{'data':'ETTh2ms1f2.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1], 'ms':[1,1,1]},
+    'ETTh2ms1f2':{'data':'','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1], 'ms':[1,1,1]},
 
     'ETTm1':{'data':'ETTm1.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1]},
     'ETTm2':{'data':'ETTm2.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1]},
@@ -86,7 +94,7 @@ data_parser = {
 
 if args.data in data_parser.keys():
     data_info = data_parser[args.data]
-    args.data_path = data_info['data']
+    #args.data_path = data_info['data']
     args.target = data_info['T']
     args.enc_in, args.dec_in, args.c_out = data_info[args.features]
 
