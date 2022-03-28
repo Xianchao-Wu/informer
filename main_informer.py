@@ -59,7 +59,7 @@ parser.add_argument('--loss', type=str, default='mse',help='loss function')
 parser.add_argument('--lradj', type=str, default='type1',help='adjust learning rate')
 parser.add_argument('--use_amp', action='store_true', help='use automatic mixed precision training', default=False)
 parser.add_argument('--inverse', action='store_true', help='inverse output data', default=False)
-
+parser.add_argument('--debug', action='store_true', help='debug mode', default=False)
 parser.add_argument('--use_gpu', type=bool, default=True, help='use gpu')
 parser.add_argument('--gpu', type=int, default=0, help='gpu')
 parser.add_argument('--use_multi_gpu', action='store_true', help='use multiple gpus', default=False)
@@ -82,6 +82,8 @@ data_parser = {
 
     #'ETTh2ms1f2':{'data':'ETTh2ms1f2.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1], 'ms':[1,1,1]},
     'ETTh2ms1f2':{'data':'','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1], 'ms':[1,1,1]},
+    
+    'ETTh2f4t1':{'data':'','T':'target','M':[5,5,5],'S':[1,1,1],'MS':[7,7,1], 'ms':[1,1,1]},
 
     'ETTm1':{'data':'ETTm1.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1]},
     'ETTm2':{'data':'ETTm2.csv','T':'OT','M':[7,7,7],'S':[1,1,1],'MS':[7,7,1]},
@@ -90,7 +92,8 @@ data_parser = {
     'Solar':{'data':'solar_AL.csv','T':'POWER_136','M':[137,137,137],'S':[1,1,1],'MS':[137,137,1]},
 }
 
-#import ipdb; ipdb.set_trace()
+if args.debug:
+    import ipdb; ipdb.set_trace()
 
 if args.data in data_parser.keys():
     data_info = data_parser[args.data]
