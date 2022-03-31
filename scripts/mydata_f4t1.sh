@@ -12,7 +12,7 @@
 
 slice_len=168  # 7*24 = one week as one slice. the number of points in one slice
 
-in_slice_num=2 # NOTE changable, can try other values >= 1 
+in_slice_num=4 #2 # NOTE changable, can try other values >= 1 
 out_slice_num=1 # NOTE changable, can try other values >= 1 
 
 seq_len=`expr $slice_len \* $in_slice_num`
@@ -50,7 +50,7 @@ python main_informer.py \
 	--d_layers 2 \
 	--attn prob \
 	--des 'Exp' \
-	--itr 5 \
+	--itr 10 \
 	--batch_size 16 #\
 	#--debug
 
