@@ -222,6 +222,42 @@ class Exp_Informer(Exp_Basic):
         
         return self.model
 
+    def average(self, preds):
+        id2values = dict() # batch.id : a list of predicted values
+        bnum, blen, targetlen = preds.shape
+        # NOTE only take the right-most target for now!
+        for bid in range(bnum):
+            # bid = batch index
+            for j in range(blen):
+                # e.g. j=0 to 167
+                real_data_id = bid + j # + seq_len if required
+                vlist = id2values[real_data_id] if real_data_id in id2values else []
+                vlist.append(preds[bid, j, -1]) # TODO can change -1 to other values or ranges...
+                id2values[real_data_id] = vlist
+
+        outlist = list()
+        dkeys = id2values.keys()
+
+        for data_id in sorted(dkeys):
+            vlist = id2values[data_id]
+            amean = np.mean(vlist)
+            outlist.append(amean)
+
+        outlist = np.array(outlist)
+        return outlist
+
+    def save_txt(self, afn, preds):
+        with open(afn, 'w') as bw:
+            for pred in preds:
+                bw.write('{}\n'.format(pred))
+    
+    def save_txt2(self, afn, trues, preds):
+        with open(afn, 'w') as bw:
+            bw.write('true\tpred\n')
+            for true, pred in zip(trues, preds):
+                bw.write('{}\t{}\n'.format(true, pred))
+
+
     def test(self, setting):
         test_data, test_loader = self._get_data(flag='test')
         
@@ -243,17 +279,44 @@ class Exp_Informer(Exp_Basic):
         trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
         print('test shape:', preds.shape, trues.shape)
 
+        # preds.shape = [5088, 168, 5]
+        # trues.shape = [5088, 168, 5]
+        # NOTE, average the values of duplicately predicted points 
+
+        #if args.debug:
+        #import ipdb; ipdb.set_trace()
+        preds = self.average(preds)
+        trues = self.average(trues)
+
+
         # result save
         folder_path = './results/' + setting +'/'
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
         mae, mse, rmse, mape, mspe = metric(preds, trues)
-        print('mse:{}, mae:{}'.format(mse, mae))
+        print('mse:{}, mae:{}, rmse:{}, mape:{}, mspe:{}'.format(mse, mae, rmse, mape, mspe))
 
         np.save(folder_path+'metrics.npy', np.array([mae, mse, rmse, mape, mspe]))
         np.save(folder_path+'pred.npy', preds)
         np.save(folder_path+'true.npy', trues)
+
+        self.save_txt(folder_path + 'pred.txt', preds)
+        self.save_txt(folder_path + 'true.txt', trues)
+        self.save_txt2(folder_path + 'true_pred.txt', trues, preds)
+
+        # recover the original data values:
+        preds_orig = test_data.inverse_transform_tar(torch.from_numpy(preds))
+        trues_orig = test_data.inverse_transform_tar(torch.from_numpy(trues))
+
+
+        preds_orig_np = preds_orig.numpy()
+        trues_orig_np = trues_orig.numpy()
+
+        self.save_txt(folder_path + 'pred_orig.txt', preds_orig_np)
+        self.save_txt(folder_path + 'true_orig.txt', trues_orig_np)
+        self.save_txt2(folder_path + 'true_pred_orig_all.txt', trues_orig_np, preds_orig_np)
+
 
         return
 
@@ -312,6 +375,7 @@ class Exp_Informer(Exp_Basic):
             else:
                 outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
         if self.args.inverse:
+            # TODO only change "outputs" is not enough... "batch_y"=the reference should also be changed...
             outputs = dataset_object.inverse_transform(outputs)
         f_dim = -1 if self.args.features=='MS' else 0
         batch_y = batch_y[:,-self.args.pred_len:,f_dim:].to(self.device)

@@ -121,6 +121,8 @@ for ii in range(args.itr):
     print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
     exp.train(setting)
     
+    #if args.debug:
+    #import ipdb; ipdb.set_trace()
     print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
     exp.test(setting)
 

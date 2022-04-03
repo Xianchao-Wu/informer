@@ -66,9 +66,15 @@ class StandardScaler():
         #import ipdb; ipdb.set_trace()
         mean = torch.from_numpy(self.mean).type_as(data).to(data.device) if torch.is_tensor(data) else self.mean
         std = torch.from_numpy(self.std).type_as(data).to(data.device) if torch.is_tensor(data) else self.std
+        print('[train data] mean={}, std={}; data.shape={}'.format(mean, std, data.shape))
         return (data - mean) / std
 
     def inverse_transform(self, data):
         mean = torch.from_numpy(self.mean).type_as(data).to(data.device) if torch.is_tensor(data) else self.mean
         std = torch.from_numpy(self.std).type_as(data).to(data.device) if torch.is_tensor(data) else self.std
         return (data * std) + mean
+    
+    def inverse_transform_tar(self, data):
+        mean = torch.from_numpy(self.mean).type_as(data).to(data.device) if torch.is_tensor(data) else self.mean
+        std = torch.from_numpy(self.std).type_as(data).to(data.device) if torch.is_tensor(data) else self.std
+        return (data * std[-1]) + mean[-1]

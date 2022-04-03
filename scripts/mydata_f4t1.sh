@@ -51,6 +51,7 @@ python main_informer.py \
 	--attn prob \
 	--des 'Exp' \
 	--itr 10 \
+	--train_epochs 20 \
 	--batch_size 16 #\
 	#--debug
 

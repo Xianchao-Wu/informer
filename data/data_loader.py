@@ -119,6 +119,9 @@ class Dataset_ETT_ms(Dataset):
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
+    
+    def inverse_transform_tar(self, data):
+        return self.scaler.inverse_transform_tar(data)
 
 class Dataset_ETT_hour2(Dataset):
     def __init__(self, root_path, flag='train', size=None, 
@@ -234,6 +237,9 @@ class Dataset_ETT_hour2(Dataset):
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
+    
+    def inverse_transform_tar(self, data):
+        return self.scaler.inverse_transform_tar(data)
 
 class Dataset_ETT_hour(Dataset):
     def __init__(self, root_path, flag='train', size=None, 
