@@ -184,7 +184,9 @@ class Exp_Informer(Exp_Basic):
                     import ipdb; ipdb.set_trace()
                 pred, true = self._process_one_batch(
                     train_data, batch_x, batch_y, batch_x_mark, batch_y_mark)
-                loss = criterion(pred, true)
+                # TODO we shall only use the "target" as our loss!
+                #import ipdb ;ipdb.set_trace()
+                loss = criterion(pred[:, :, -1], true[:, :, -1])
                 train_loss.append(loss.item())
                 
                 if (i+1) % 100==0:

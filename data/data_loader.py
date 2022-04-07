@@ -16,10 +16,11 @@ class Dataset_ETT_ms(Dataset):
     def __init__(self, root_path, flag='train', size=None, 
                  features='S', data_path='ETTh1.csv', 
                  target='OT', scale=True, inverse=False, timeenc=0, freq='h', cols=None,
-                 train_ratio=0.8, dev_ratio=0.1, test_ratio=0.1):
+                 train_ratio=0.8, dev_ratio=0.1, test_ratio=0.1, debug=False):
         # size [seq_len, label_len, pred_len]
         # info
         #import ipdb; ipdb.set_trace()
+        self.debug = debug
         if size == None:
             self.seq_len = 24*4*4
             self.label_len = 24*4

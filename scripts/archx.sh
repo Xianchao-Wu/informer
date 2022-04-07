@@ -32,9 +32,10 @@ dev_ratio=0.1
 test_ratio=0.1
 
 #python -m ipdb main_informer.py \
+#--gpu 0 \
 python main_informer.py \
 	--use_gpu True \
-	--gpu 0 \
+	--use_multi_gpu \
 	--model informer \
 	--data ETTh2ms1f2 \
 	--data_path $infn \
@@ -50,6 +51,7 @@ python main_informer.py \
 	--d_layers 2 \
 	--attn prob \
 	--des 'Exp' \
-	--itr 5 \
+	--itr 2 \
+	--train_epochs 10 \
 	--batch_size 8
 

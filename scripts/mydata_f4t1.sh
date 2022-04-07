@@ -50,7 +50,7 @@ python main_informer.py \
 	--d_layers 2 \
 	--attn prob \
 	--des 'Exp' \
-	--itr 10 \
+	--itr 20 \
 	--train_epochs 20 \
 	--batch_size 16 #\
 	#--debug
